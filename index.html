@@ -2,49 +2,61 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>의류 원가 및 마진 계산기</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 500px;
-            margin: 40px auto;
+            max-width: 100%;
+            margin: 0;
             padding: 20px;
-            border: 1px solid #ccc;
+            box-sizing: border-box;
+            background-color: #f9f9f9;
+        }
+        .container {
+            max-width: 500px;
+            margin: auto;
+            background-color: #fff;
+            padding: 20px;
             border-radius: 12px;
             box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
         }
-        h1, h2 {
+        h1 {
             text-align: center;
+            font-size: 1.5em;
         }
         label {
             display: block;
-            margin: 10px 0 5px;
+            margin: 12px 0 5px;
             font-weight: bold;
+            font-size: 0.95em;
         }
         input {
             width: 100%;
-            padding: 8px;
+            padding: 12px;
             margin-bottom: 10px;
             box-sizing: border-box;
             border-radius: 6px;
             border: 1px solid #aaa;
+            font-size: 1em;
         }
         button {
             width: 100%;
-            padding: 10px;
+            padding: 14px;
             margin-top: 10px;
-            font-size: 16px;
+            font-size: 1em;
             background-color: #4CAF50;
             color: white;
             border: none;
             border-radius: 6px;
             cursor: pointer;
+            transition: background-color 0.3s ease;
         }
         button:hover {
             background-color: #45a049;
         }
         .result {
-            font-size: 18px;
+            font-size: 1.1em;
             margin-top: 15px;
             text-align: center;
             color: #333;
@@ -55,51 +67,53 @@
     </style>
 </head>
 <body>
-    <h1>의류 원가 & 마진 계산기</h1>
+    <div class="container">
+        <h1>의류 원가 & 마진 계산기</h1>
 
-    <label>원단 가격 (₩ / 1야드)</label>
-    <input type="number" id="fabricPrice" value="0">
+        <label>원단 가격 (₩ / 1야드)</label>
+        <input type="number" id="fabricPrice" value="0">
 
-    <label>원단 요척 (야드)</label>
-    <input type="number" id="fabricYard" value="0">
+        <label>원단 요척 (야드)</label>
+        <input type="number" id="fabricYard" value="0">
 
-    <label>부자재 비용 (₩)</label>
-    <input type="number" id="materialCost" value="0">
+        <label>부자재 비용 (₩)</label>
+        <input type="number" id="materialCost" value="0">
 
-    <label>임가공비 (₩)</label>
-    <input type="number" id="processingCost" value="0">
+        <label>임가공비 (₩)</label>
+        <input type="number" id="processingCost" value="0">
 
-    <label>프린팅 & 자수 비용 (₩)</label>
-    <input type="number" id="printEmbroideryCost" value="0">
+        <label>프린팅 & 자수 비용 (₩)</label>
+        <input type="number" id="printEmbroideryCost" value="0">
 
-    <label>포장비 (₩)</label>
-    <input type="number" id="packingCost" value="0">
+        <label>포장비 (₩)</label>
+        <input type="number" id="packingCost" value="0">
 
-    <label>택배비 (₩)</label>
-    <input type="number" id="shippingCost" value="0">
+        <label>택배비 (₩)</label>
+        <input type="number" id="shippingCost" value="0">
 
-    <label>관리비 (%)</label>
-    <input type="number" id="overheadRate" value="0">
+        <label>관리비 (%)</label>
+        <input type="number" id="overheadRate" value="0">
 
-    <button onclick="calculateCost()">총 원가 계산</button>
+        <button onclick="calculateCost()">총 원가 계산</button>
 
-    <div class="result">
-        총 원가: <span id="totalCost">₩0</span>
-    </div>
+        <div class="result">
+            총 원가: <span id="totalCost">₩0</span>
+        </div>
 
-    <hr>
+        <hr>
 
-    <label>판매가 (₩)</label>
-    <input type="number" id="sellingPrice" value="0">
+        <label>판매가 (₩)</label>
+        <input type="number" id="sellingPrice" value="0">
 
-    <label>판매 수수료 (%)</label>
-    <input type="number" id="commissionRate" value="0">
+        <label>판매 수수료 (%)</label>
+        <input type="number" id="commissionRate" value="0">
 
-    <button onclick="calculateMargin()">판매 마진 계산</button>
+        <button onclick="calculateMargin()">판매 마진 계산</button>
 
-    <div class="result">
-        순마진: <span id="profit">₩0</span><br>
-        마진율: <span id="profitRate">0%</span>
+        <div class="result">
+            순마진: <span id="profit">₩0</span><br>
+            마진율: <span id="profitRate">0%</span>
+        </div>
     </div>
 
     <script>
