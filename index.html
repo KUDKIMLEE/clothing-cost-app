@@ -40,6 +40,12 @@
       border: 1px solid #aaa;
       font-size: 1em;
     }
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 140px;
+      gap: 8px;
+      align-items: center;
+    }
     button {
       width: 100%;
       padding: 14px;
@@ -60,10 +66,12 @@
       margin-top: 15px;
       text-align: center;
       color: #333;
+      line-height: 1.6;
     }
     hr {
       margin: 20px 0;
     }
+    .hint { font-size: 0.85em; color:#666; margin-top:-6px; margin-bottom:8px; }
   </style>
 </head>
 <body>
@@ -91,8 +99,13 @@
     <label>택배비 (₩)</label>
     <input type="number" id="shippingCost" value="0" />
 
-    <label>용역비용 (₩)</label>
-    <input type="number" id="outsourcingCost" value="0" />
+    <!-- ✅ 커스텀 항목명 + 금액 입력 영역 -->
+    <label>추가 항목 (직접 입력)</label>
+    <div class="row">
+      <input type="text" id="customItemName" placeholder="예: 촬영 / 컨설팅 / 외주" value="용역" />
+      <input type="number" id="customItemCost" placeholder="₩ 금액" value="0" />
+    </div>
+    <div class="hint">원가에 포함할 임의의 항목명을 직접 입력하고 금액을 함께 기입하세요.</div>
 
     <label>관리비 (%)</label>
     <input type="number" id="overheadRate" value="0" />
@@ -131,7 +144,7 @@
       const printEmbroideryCost = parseFloat(document.getElementById("printEmbroideryCost").value) || 0;
       const packingCost = parseFloat(document.getElementById("packingCost").value) || 0;
       const shippingCost = parseFloat(document.getElementById("shippingCost").value) || 0;
-      const outsourcingCost = parseFloat(document.getElementById("outsourcingCost").value) || 0;
+      const customItemCost = parseFloat(document.getElementById("customItemCost").value) || 0;
       const overheadRate = parseFloat(document.getElementById("overheadRate").value) || 0;
 
       const baseCost =
@@ -141,10 +154,10 @@
         printEmbroideryCost +
         packingCost +
         shippingCost +
-        outsourcingCost;
+        customItemCost; // ✅ 커스텀 항목 금액 포함
 
-      totalCost = baseCost * (1 + overheadRate / 100);
-      const totalCostVat = totalCost * 1.1;
+      totalCost = baseCost * (1 + overheadRate / 100); // VAT 제외 총원가
+      const totalCostVat = totalCost * 1.1; // VAT 포함 총원가
 
       document.getElementById("totalCost").innerText = `₩${totalCost.toLocaleString(undefined, {
         maximumFractionDigits: 0,
@@ -159,7 +172,7 @@
       const commissionRate = parseFloat(document.getElementById("commissionRate").value) || 0;
 
       const commissionAmount = sellingPrice * (commissionRate / 100);
-      const netProfit = sellingPrice - commissionAmount - totalCost;
+      const netProfit = sellingPrice - commissionAmount - (totalCost * 1.1); // ✅ 요청: VAT 포함 원가로 차감
       const profitRate = sellingPrice > 0 ? (netProfit / sellingPrice) * 100 : 0;
 
       document.getElementById("profit").innerText = `₩${netProfit.toLocaleString(undefined, {
