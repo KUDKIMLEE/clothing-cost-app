@@ -1,185 +1,687 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>의류 원가 및 마진 계산기</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 100%;
-      margin: 0;
-      padding: 20px;
-      box-sizing: border-box;
-      background-color: #f9f9f9;
-    }
-    .container {
-      max-width: 500px;
-      margin: auto;
-      background-color: #fff;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
-    }
-    h1 {
-      text-align: center;
-      font-size: 1.5em;
-    }
-    label {
-      display: block;
-      margin: 12px 0 5px;
-      font-weight: bold;
-      font-size: 0.95em;
-    }
-    input {
-      width: 100%;
-      padding: 12px;
-      margin-bottom: 10px;
-      box-sizing: border-box;
-      border-radius: 6px;
-      border: 1px solid #aaa;
-      font-size: 1em;
-    }
-    .row {
-      display: grid;
-      grid-template-columns: 1fr 140px;
-      gap: 8px;
-      align-items: center;
-    }
-    button {
-      width: 100%;
-      padding: 14px;
-      margin-top: 10px;
-      font-size: 1em;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-    button:hover {
-      background-color: #45a049;
-    }
-    .result {
-      font-size: 1.1em;
-      margin-top: 15px;
-      text-align: center;
-      color: #333;
-      line-height: 1.6;
-    }
-    hr {
-      margin: 20px 0;
-    }
-    .hint { font-size: 0.85em; color:#666; margin-top:-6px; margin-bottom:8px; }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#111827" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="원가계산기" />
+<title>makemade — 생산 원가 계산기</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --panel:#ffffff; --ink:#111827; --muted:#6b7280;
+    --line:#e5e7eb; --line2:#eef0f3; --brand:#111827; --brand2:#374151;
+    --accent:#2563eb; --accent-soft:#eff6ff; --good:#059669; --good-soft:#ecfdf5;
+    --warn:#b45309; --danger:#dc2626; --radius:14px; --shadow:0 1px 2px rgba(16,24,40,.06),0 8px 24px rgba(16,24,40,.06);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Malgun Gothic",Roboto,sans-serif;
+    background:var(--bg); color:var(--ink); line-height:1.5; -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit}
+  .wrap{max-width:1180px;margin:0 auto;padding:20px 18px 80px}
+
+  /* Header */
+  header.top{
+    display:flex;align-items:center;justify-content:space-between;gap:14px;
+    padding:14px 18px;background:var(--panel);border:1px solid var(--line);
+    border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:20px;flex-wrap:wrap;
+  }
+  .brand{display:flex;align-items:center;gap:12px}
+  .logo{
+    width:38px;height:38px;border-radius:10px;background:var(--brand);color:#fff;
+    display:grid;place-items:center;font-weight:800;font-size:15px;letter-spacing:.5px;
+  }
+  .brand h1{font-size:16px;margin:0;font-weight:700}
+  .brand p{font-size:12px;margin:0;color:var(--muted)}
+  .head-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+
+  .cur-toggle{display:inline-flex;background:var(--line2);border-radius:10px;padding:3px}
+  .cur-toggle button{
+    border:0;background:transparent;padding:7px 12px;border-radius:8px;cursor:pointer;
+    font-size:13px;font-weight:600;color:var(--muted);
+  }
+  .cur-toggle button.active{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+
+  .saved-btn{
+    border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 12px;
+    font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;
+  }
+  .saved-btn .badge{background:var(--brand);color:#fff;border-radius:999px;font-size:11px;padding:1px 7px}
+
+  /* Layout */
+  .grid{display:grid;grid-template-columns:1fr 380px;gap:20px;align-items:start}
+  @media (max-width:920px){.grid{grid-template-columns:1fr}}
+  .left-col{display:flex;flex-direction:column;gap:20px}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+  .section{padding:18px 20px;border-bottom:1px solid var(--line2)}
+  .section:last-child{border-bottom:0}
+  .section h2{
+    font-size:15px;font-weight:800;margin:0 0 16px;letter-spacing:-.2px;color:var(--ink);
+    display:flex;align-items:center;gap:10px;
+  }
+  .section h2::before{
+    content:"";width:4px;height:16px;border-radius:3px;flex:none;
+    background:var(--tc,var(--accent));
+  }
+  .section h2 .badge-icon{
+    display:inline-grid;place-items:center;width:24px;height:24px;border-radius:7px;flex:none;
+    background:color-mix(in srgb, var(--tc,var(--accent)) 14%, #fff);
+    color:var(--tc,var(--accent));font-size:13px;
+  }
+  .section .sub{font-size:12px;color:var(--muted);margin:-8px 0 12px}
+
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+  @media (max-width:560px){.row,.row3{grid-template-columns:1fr}}
+
+  .field{display:flex;flex-direction:column;gap:6px;margin-bottom:2px}
+  .field label{font-size:12.5px;font-weight:600;color:var(--brand2)}
+  .field .hint{font-size:11px;color:var(--muted)}
+  .input-wrap{position:relative;display:flex;align-items:center}
+  .input-wrap .unit{position:absolute;right:12px;font-size:12px;color:var(--muted);pointer-events:none}
+  input,select{
+    width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14px;
+    background:#fff;color:var(--ink);outline:none;transition:border-color .15s,box-shadow .15s;font-family:inherit;
+  }
+  input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  input[type=number]{-moz-appearance:textfield}
+  input.has-unit{padding-right:52px}
+
+  .title-row{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
+  .title-row .field{flex:1;min-width:180px}
+
+  /* Sub-materials */
+  .mat-row{display:grid;grid-template-columns:1.6fr 1fr 1fr auto;gap:10px;align-items:end;margin-bottom:10px}
+  @media (max-width:560px){.mat-row{grid-template-columns:1fr 1fr auto}}
+  .icon-btn{
+    border:1px solid var(--line);background:#fff;border-radius:9px;height:40px;width:40px;cursor:pointer;
+    font-size:16px;color:var(--danger);display:grid;place-items:center;flex:none;
+  }
+  .add-btn{
+    border:1px dashed var(--line);background:#fafafa;border-radius:10px;padding:9px 12px;cursor:pointer;
+    font-size:13px;font-weight:600;color:var(--brand2);width:100%;
+  }
+  .add-btn:hover{background:#f3f4f6}
+
+  .seg{display:inline-flex;background:var(--line2);border-radius:9px;padding:3px;width:100%}
+  .seg button{flex:1;border:0;background:transparent;padding:8px;border-radius:7px;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted)}
+  .seg button.active{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+
+  .calc-actions{display:flex;gap:10px;padding:18px 20px;flex-wrap:wrap}
+  .btn{border:0;border-radius:11px;padding:13px 18px;font-size:14px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;justify-content:center}
+  .btn-primary{background:var(--brand);color:#fff;flex:1;min-width:150px}
+  .btn-primary:hover{background:#000}
+  .btn-ghost{background:#fff;border:1px solid var(--line);color:var(--brand2)}
+  .btn-ghost:hover{background:#f9fafb}
+
+  /* Result panel */
+  .result-sticky{position:sticky;top:20px}
+  .result-head{padding:18px 20px;border-bottom:1px solid var(--line2)}
+  .result-head h2{margin:0;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--brand2)}
+  .hero{padding:22px 20px;text-align:center;border-bottom:1px solid var(--line2)}
+  .hero .label{font-size:12px;color:var(--muted);font-weight:600}
+  .hero .big{font-size:34px;font-weight:800;letter-spacing:-.5px;margin:4px 0 2px}
+  .hero .big.sell{color:var(--accent)}
+  .hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:0}
+  .hero-grid .cell{padding:18px 12px;text-align:center}
+  .hero-grid .cell+.cell{border-left:1px solid var(--line2)}
+  .hero-grid .num{font-size:20px;font-weight:800}
+  .hero-grid .num.sell{color:var(--accent)}
+  .hero-grid .cap{font-size:11px;color:var(--muted);font-weight:600;margin-top:2px}
+
+  .breakdown{padding:16px 20px}
+  .bd-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;font-size:13.5px;border-bottom:1px dashed var(--line2)}
+  .bd-row:last-child{border-bottom:0}
+  .bd-row .k{color:var(--brand2);display:flex;align-items:center;gap:8px}
+  .bd-row .dot{width:9px;height:9px;border-radius:3px;flex:none}
+  .bd-row .v{font-weight:700}
+  .bd-row.total{border-top:2px solid var(--line);margin-top:4px;padding-top:12px;font-size:15px}
+  .bd-row.total .v{font-size:16px}
+
+  .bar{height:12px;border-radius:8px;overflow:hidden;display:flex;margin:6px 0 14px;background:var(--line2)}
+  .bar span{height:100%}
+
+  .foot-note{padding:12px 20px 18px;font-size:11px;color:var(--muted);text-align:center}
+
+  .empty{padding:40px 20px;text-align:center;color:var(--muted);font-size:13px}
+
+  /* Saved drawer */
+  .drawer-mask{position:fixed;inset:0;background:rgba(17,24,39,.4);opacity:0;pointer-events:none;transition:opacity .2s;z-index:40}
+  .drawer-mask.open{opacity:1;pointer-events:auto}
+  .drawer{
+    position:fixed;top:0;right:0;height:100%;width:360px;max-width:90vw;background:#fff;z-index:50;
+    transform:translateX(100%);transition:transform .25s;box-shadow:-10px 0 30px rgba(0,0,0,.12);display:flex;flex-direction:column;
+  }
+  .drawer.open{transform:translateX(0)}
+  .drawer h3{margin:0;font-size:15px;font-weight:700}
+  .drawer .dh{padding:18px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+  .drawer .dbody{overflow:auto;padding:12px 14px;flex:1}
+  .quote{border:1px solid var(--line);border-radius:12px;padding:12px 13px;margin-bottom:10px;cursor:pointer;transition:border-color .15s}
+  .quote:hover{border-color:var(--accent)}
+  .quote .qn{font-weight:700;font-size:14px;display:flex;justify-content:space-between;gap:8px}
+  .quote .qm{font-size:12px;color:var(--muted);margin-top:2px}
+  .quote .tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}
+  .tag{background:var(--line2);border-radius:6px;font-size:11px;padding:2px 7px;color:var(--brand2)}
+  .quote .qact{display:flex;gap:8px;margin-top:10px}
+  .quote .qact button{flex:1;border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px;font-size:12px;font-weight:600;cursor:pointer}
+  .quote .qact button.del{color:var(--danger)}
+  .x-btn{border:0;background:transparent;font-size:22px;cursor:pointer;color:var(--muted);line-height:1}
+
+  .toast{
+    position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);
+    background:var(--brand);color:#fff;padding:11px 20px;border-radius:999px;font-size:13px;font-weight:600;
+    opacity:0;pointer-events:none;transition:all .25s;z-index:60;box-shadow:0 10px 30px rgba(0,0,0,.25);
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  @media print{
+    body{background:#fff}
+    .no-print{display:none !important}
+    .wrap{max-width:none;padding:0}
+    .grid{grid-template-columns:1fr}
+    .card{box-shadow:none;border:1px solid #ccc}
+  }
+</style>
 </head>
 <body>
-  <div class="container">
-    <h1>의류 원가 & 마진 계산기</h1>
-
-    <label>원단 가격 (₩ / 1야드)</label>
-    <input type="number" id="fabricPrice" value="0" />
-
-    <label>원단 요척 (야드)</label>
-    <input type="number" id="fabricYard" value="0" />
-
-    <label>부자재 비용 (₩)</label>
-    <input type="number" id="materialCost" value="0" />
-
-    <label>임가공비 (₩)</label>
-    <input type="number" id="processingCost" value="0" />
-
-    <label>프린팅 & 자수 비용 (₩)</label>
-    <input type="number" id="printEmbroideryCost" value="0" />
-
-    <label>포장비 (₩)</label>
-    <input type="number" id="packingCost" value="0" />
-
-    <label>택배비 (₩)</label>
-    <input type="number" id="shippingCost" value="0" />
-
-    <!-- ✅ 커스텀 항목명 + 금액 입력 영역 -->
-    <label>추가 항목 (직접 입력)</label>
-    <div class="row">
-      <input type="text" id="customItemName" placeholder="예: 촬영 / 컨설팅 / 외주" value="용역" />
-      <input type="number" id="customItemCost" placeholder="₩ 금액" value="0" />
+<div class="wrap">
+  <header class="top no-print">
+    <div class="brand">
+      <div class="logo">MM</div>
+      <div>
+        <h1>생산 원가 계산기</h1>
+        <p>원단·봉제·부자재·물류 → 개당 원가 &amp; 권장 판매가</p>
+      </div>
     </div>
-    <div class="hint">원가에 포함할 임의의 항목명을 직접 입력하고 금액을 함께 기입하세요.</div>
-
-    <label>관리비 (%)</label>
-    <input type="number" id="overheadRate" value="0" />
-
-    <button onclick="calculateCost()">총 원가 계산</button>
-
-    <div class="result">
-      총 원가 (VAT 제외): <span id="totalCost">₩0</span><br />
-      총 원가 (VAT 포함): <span id="totalCostVat">₩0</span>
+    <div class="head-actions">
+      <div class="cur-toggle" id="curToggle">
+        <button data-cur="KRW" class="active">₩ KRW</button>
+        <button data-cur="CNY">¥ CNY</button>
+        <button data-cur="USD">$ USD</button>
+      </div>
+      <button class="saved-btn" id="openDrawer">📋 저장된 견적 <span class="badge" id="savedCount">0</span></button>
     </div>
+  </header>
 
-    <hr />
+  <div class="grid">
+    <!-- LEFT: inputs -->
+    <div class="left-col">
+    <div class="card">
+      <div class="section">
+        <div class="title-row">
+          <div class="field">
+            <label>견적명</label>
+            <input id="quoteName" type="text" placeholder="예: 겨울 다운자켓 1차" />
+          </div>
+          <div class="field">
+            <label>업체명</label>
+            <input id="company" type="text" placeholder="예: OO실업" />
+          </div>
+          <div class="field">
+            <label>담당자</label>
+            <input id="manager" type="text" placeholder="예: 김OO 과장" />
+          </div>
+        </div>
+      </div>
 
-    <label>판매가 (₩)</label>
-    <input type="number" id="sellingPrice" value="0" />
+      <div class="section">
+        <h2 style="--tc:#0f172a"><span class="badge-icon">📋</span>기본 정보</h2>
+        <div class="row3">
+          <div class="field">
+            <label>제품 카테고리</label>
+            <select id="category">
+              <option value="">선택하세요</option>
+              <option>아웃도어 / 하이킹웨어</option>
+              <option>스포츠웨어</option>
+              <option>캐주얼</option>
+              <option>이너웨어</option>
+              <option>데님</option>
+              <option>다운 / 패딩</option>
+              <option>기타</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>생산 수량</label>
+            <div class="input-wrap">
+              <input id="qty" class="has-unit" type="number" min="1" value="300" />
+              <span class="unit">pcs</span>
+            </div>
+            <span class="hint">300pcs 이상부터 단가 협상 유리</span>
+          </div>
+          <div class="field">
+            <label>생산 국가 / 지역</label>
+            <select id="country">
+              <option>중국 — 광동성 (광저우/둥관)</option>
+              <option>중국 — 산동성 (칭다오/웨이하이)</option>
+              <option>중국 — 절강성</option>
+              <option>베트남</option>
+              <option>방글라데시</option>
+              <option>한국</option>
+              <option>기타</option>
+            </select>
+          </div>
+        </div>
+      </div>
 
-    <label>판매 수수료 (%)</label>
-    <input type="number" id="commissionRate" value="0" />
+    </div><!-- /card: 견적·기본정보 -->
 
-    <button onclick="calculateMargin()">판매 마진 계산</button>
+    <div class="card">
+      <div class="section">
+        <h2 style="--tc:#2563eb"><span class="badge-icon">🧵</span>원단 비용</h2>
+        <div class="row3">
+          <div class="field">
+            <label>원단 단가</label>
+            <div class="input-wrap">
+              <input id="fabricPrice" class="has-unit" type="number" min="0" value="0" />
+              <span class="unit cur-unit">₩/yd</span>
+            </div>
+          </div>
+          <div class="field">
+            <label>소요량</label>
+            <div class="input-wrap">
+              <input id="fabricUse" class="has-unit" type="number" min="0" step="0.01" value="0" />
+              <span class="unit">yd/pcs</span>
+            </div>
+          </div>
+          <div class="field">
+            <label>원단 손실률</label>
+            <div class="input-wrap">
+              <input id="fabricLoss" class="has-unit" type="number" min="0" value="8" />
+              <span class="unit">%</span>
+            </div>
+          </div>
+        </div>
+        <span class="sub" style="margin-top:10px;display:block">일반 5~10% · 패턴 복잡도에 따라 상이 (1m ≈ 1.09yd)</span>
+      </div>
 
-    <div class="result">
-      순마진: <span id="profit">₩0</span><br />
-      마진율: <span id="profitRate">0%</span>
+      <div class="section">
+        <h2 style="--tc:#059669"><span class="badge-icon">✂️</span>봉제 / 가공비</h2>
+        <div class="row3">
+          <div class="field">
+            <label>봉제 단가 (CMT)</label>
+            <div class="input-wrap"><input id="cmt" class="has-unit" type="number" min="0" value="0" /><span class="unit cur-unit-pcs">₩/pcs</span></div>
+          </div>
+          <div class="field">
+            <label>추가 가공 <span class="hint">프린트·자수</span></label>
+            <div class="input-wrap"><input id="extra" class="has-unit" type="number" min="0" value="0" /><span class="unit cur-unit-pcs">₩/pcs</span></div>
+          </div>
+          <div class="field">
+            <label>검품 비용</label>
+            <div class="input-wrap"><input id="inspect" class="has-unit" type="number" min="0" value="0" /><span class="unit cur-unit-pcs">₩/pcs</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2 style="--tc:#d97706"><span class="badge-icon">🔩</span>부자재</h2>
+        <div id="matList"></div>
+        <button class="add-btn" id="addMat">+ 부자재 추가</button>
+      </div>
+
+      <div class="section">
+        <h2 style="--tc:#7c3aed"><span class="badge-icon">🚚</span>물류 / 기타</h2>
+        <div class="row3">
+          <div class="field">
+            <label>국제 운송비 <span class="hint">총액</span></label>
+            <div class="input-wrap"><input id="shipping" class="has-unit" type="number" min="0" value="0" /><span class="unit cur-unit-total">₩</span></div>
+          </div>
+          <div class="field">
+            <label>관세 / 통관 <span class="hint">총액</span></label>
+            <div class="input-wrap"><input id="customs" class="has-unit" type="number" min="0" value="0" /><span class="unit cur-unit-total">₩</span></div>
+          </div>
+          <div class="field">
+            <label>포장 / 라벨</label>
+            <div class="input-wrap"><input id="packing" class="has-unit" type="number" min="0" value="0" /><span class="unit cur-unit-pcs">₩/pcs</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /card: 원단~물류 -->
+
+    <div class="card">
+      <div class="section">
+        <h2 style="--tc:#dc2626"><span class="badge-icon">📈</span>마진 설정</h2>
+        <div class="row">
+          <div class="field">
+            <label>프로모션 마진율 <span class="hint">(= 내 마진율)</span></label>
+            <div class="input-wrap"><input id="myMargin" class="has-unit" type="number" min="0" value="30" /><span class="unit">%</span></div>
+            <span class="hint">원가 위에 적용</span>
+          </div>
+          <div class="field">
+            <label>VAT</label>
+            <div class="seg" id="vatSeg">
+              <button data-vat="1" class="active">VAT 10% 포함</button>
+              <button data-vat="0">VAT 제외</button>
+            </div>
+          </div>
+        </div>
+        <span class="sub" style="margin-top:12px;display:block">최종 단가 = 개당 원가 × (1 + 마진율)</span>
+      </div>
+
+      <div class="calc-actions no-print">
+        <button class="btn btn-primary" id="calcBtn">원가 계산하기</button>
+        <button class="btn btn-ghost" id="saveBtn">💾 견적 저장</button>
+        <button class="btn btn-ghost" id="pdfBtn">📄 PDF 내보내기</button>
+      </div>
+    </div><!-- /card: 마진설정 -->
+    </div><!-- /left-col -->
+
+    <!-- RIGHT: result -->
+    <div class="result-sticky">
+      <div class="card">
+        <div class="result-head"><h2>단가 · 마진 분석 결과</h2></div>
+        <div class="hero">
+          <div class="label">최종 단가 (개당)</div>
+          <div class="big sell" id="rFinal">—</div>
+          <div class="label" style="margin-top:4px">개당 생산원가 <b id="rCostInline" style="color:var(--ink)">—</b></div>
+        </div>
+        <div class="hero-grid" style="border-bottom:1px solid var(--line2)">
+          <div class="cell">
+            <div class="num sell" id="rTotalMargin">—</div>
+            <div class="cap">총 마진율 <span style="color:#9aa0aa">(원가 기준)</span></div>
+          </div>
+          <div class="cell">
+            <div class="num" id="rMarginAmt">—</div>
+            <div class="cap">개당 마진액</div>
+          </div>
+        </div>
+        <div class="breakdown" id="breakdown">
+          <div class="empty" id="bdEmpty">입력값을 넣고 <b>원가 계산하기</b>를 누르세요.</div>
+          <div id="bdContent" style="display:none">
+            <div class="bar" id="costBar"></div>
+            <div class="bd-row"><span class="k"><span class="dot" style="background:#2563eb"></span>원단</span><span class="v" id="bdFabric">—</span></div>
+            <div class="bd-row"><span class="k"><span class="dot" style="background:#059669"></span>봉제·가공</span><span class="v" id="bdSew">—</span></div>
+            <div class="bd-row"><span class="k"><span class="dot" style="background:#d97706"></span>부자재</span><span class="v" id="bdMat">—</span></div>
+            <div class="bd-row"><span class="k"><span class="dot" style="background:#7c3aed"></span>물류·기타</span><span class="v" id="bdLog">—</span></div>
+            <div class="bd-row total"><span class="k">개당 원가 합계</span><span class="v" id="bdUnit">—</span></div>
+            <div class="bd-row"><span class="k">＋ 프로모션 마진 <span id="bdMyPct" style="color:var(--muted)">(—%)</span></span><span class="v" id="bdMyMargin">—</span></div>
+            <div class="bd-row total"><span class="k">＝ 최종 단가 (개당)</span><span class="v sell" id="bdFinal" style="color:var(--accent)">—</span></div>
+            <div class="bd-row" style="margin-top:8px"><span class="k">총 생산원가 (<span id="bdQty">0</span>pcs)</span><span class="v" id="bdTotal">—</span></div>
+            <div class="bd-row"><span class="k">총 마진액</span><span class="v" id="bdMarginTotal" style="color:var(--good)">—</span></div>
+          </div>
+        </div>
+        <div class="foot-note">makemade · 생산 원가 &amp; 마진 계산기 · 참고용 추산치</div>
+      </div>
     </div>
   </div>
+</div>
 
-  <script>
-    let totalCost = 0;
+<!-- Saved drawer -->
+<div class="drawer-mask no-print" id="drawerMask"></div>
+<aside class="drawer no-print" id="drawer">
+  <div class="dh">
+    <h3>저장된 견적 <span id="drawerCount" style="color:var(--muted);font-weight:600"></span></h3>
+    <button class="x-btn" id="closeDrawer">×</button>
+  </div>
+  <div class="dbody" id="quoteList"></div>
+</aside>
 
-    function calculateCost() {
-      const fabricPrice = parseFloat(document.getElementById("fabricPrice").value) || 0;
-      const fabricYard = parseFloat(document.getElementById("fabricYard").value) || 0;
-      const materialCost = parseFloat(document.getElementById("materialCost").value) || 0;
-      const processingCost = parseFloat(document.getElementById("processingCost").value) || 0;
-      const printEmbroideryCost = parseFloat(document.getElementById("printEmbroideryCost").value) || 0;
-      const packingCost = parseFloat(document.getElementById("packingCost").value) || 0;
-      const shippingCost = parseFloat(document.getElementById("shippingCost").value) || 0;
-      const customItemCost = parseFloat(document.getElementById("customItemCost").value) || 0;
-      const overheadRate = parseFloat(document.getElementById("overheadRate").value) || 0;
+<div class="toast" id="toast"></div>
 
-      const baseCost =
-        fabricPrice * fabricYard +
-        materialCost +
-        processingCost +
-        printEmbroideryCost +
-        packingCost +
-        shippingCost +
-        customItemCost; // ✅ 커스텀 항목 금액 포함
+<script>
+(function(){
+  "use strict";
+  const $ = id => document.getElementById(id);
 
-      totalCost = baseCost * (1 + overheadRate / 100); // VAT 제외 총원가
-      const totalCostVat = totalCost * 1.1; // VAT 포함 총원가
+  // ---- currency ----
+  const CUR = {
+    KRW:{sym:"₩", rateFromKRW:1,      dp:0},
+    CNY:{sym:"¥", rateFromKRW:1/190,  dp:2},   // ~190 KRW = 1 CNY
+    USD:{sym:"$", rateFromKRW:1/1360, dp:2}    // ~1360 KRW = 1 USD
+  };
+  let cur = "KRW";
 
-      document.getElementById("totalCost").innerText = `₩${totalCost.toLocaleString(undefined, {
-        maximumFractionDigits: 0,
-      })}`;
-      document.getElementById("totalCostVat").innerText = `₩${totalCostVat.toLocaleString(undefined, {
-        maximumFractionDigits: 0,
-      })}`;
+  const numFields = ["fabricPrice","fabricUse","fabricLoss","cmt","extra","inspect","shipping","customs","packing","myMargin","qty"];
+  // fields that are monetary (converted on currency switch)
+  const moneyFields = ["fabricPrice","cmt","extra","inspect","shipping","customs","packing"];
+
+  function fmt(v){
+    const c = CUR[cur];
+    let rounded;
+    if(c.dp===0){ // 원화: 1원 단위 올림
+      rounded = Math.ceil(Number(v) - 1e-9);
+    } else {      // 위안/달러: 최소단위 올림
+      const factor = Math.pow(10, c.dp);
+      rounded = Math.ceil(Number(v)*factor - 1e-9)/factor;
     }
+    return c.sym + " " + rounded.toLocaleString("ko-KR",{minimumFractionDigits:c.dp,maximumFractionDigits:c.dp});
+  }
+  function num(id){ const n = parseFloat($(id).value); return isNaN(n)?0:n; }
 
-    function calculateMargin() {
-      const sellingPrice = parseFloat(document.getElementById("sellingPrice").value) || 0;
-      const commissionRate = parseFloat(document.getElementById("commissionRate").value) || 0;
+  // ---- sub-materials ----
+  const matList = $("matList");
+  function matRow(name="", price="", qty=""){
+    const div = document.createElement("div");
+    div.className = "mat-row";
+    div.innerHTML =
+      '<div class="field"><label>부자재명</label><input type="text" class="m-name" placeholder="지퍼, 라벨 등" value="'+name+'"></div>'+
+      '<div class="field"><label>단가</label><div class="input-wrap"><input type="number" min="0" class="m-price has-unit" value="'+price+'"><span class="unit cur-unit-pcs">'+CUR[cur].sym+'/pcs</span></div></div>'+
+      '<div class="field"><label>수량/pcs</label><input type="number" min="0" step="0.01" class="m-qty" value="'+qty+'"></div>'+
+      '<button class="icon-btn" title="삭제">✕</button>';
+    div.querySelector(".icon-btn").onclick = ()=>div.remove();
+    matList.appendChild(div);
+    return div;
+  }
+  $("addMat").onclick = ()=>matRow();
+  matRow("지퍼","",""); // start with one row
 
-      const commissionAmount = sellingPrice * (commissionRate / 100);
-      const netProfit = sellingPrice - commissionAmount - (totalCost * 1.1); // ✅ 요청: VAT 포함 원가로 차감
-      const profitRate = sellingPrice > 0 ? (netProfit / sellingPrice) * 100 : 0;
+  function matTotal(){
+    let t=0;
+    matList.querySelectorAll(".mat-row").forEach(r=>{
+      const p=parseFloat(r.querySelector(".m-price").value)||0;
+      const q=parseFloat(r.querySelector(".m-qty").value)||0;
+      t += p*q;
+    });
+    return t;
+  }
 
-      document.getElementById("profit").innerText = `₩${netProfit.toLocaleString(undefined, {
-        maximumFractionDigits: 0,
-      })}`;
-      document.getElementById("profitRate").innerText = `${profitRate.toFixed(1)}%`;
-    }
-  </script>
+  // ---- VAT segment ----
+  let vatIncluded = 1;
+  $("vatSeg").querySelectorAll("button").forEach(b=>{
+    b.onclick = ()=>{
+      $("vatSeg").querySelectorAll("button").forEach(x=>x.classList.remove("active"));
+      b.classList.add("active");
+      vatIncluded = parseInt(b.dataset.vat,10);
+    };
+  });
+
+  // ---- currency toggle ----
+  $("curToggle").querySelectorAll("button").forEach(b=>{
+    b.onclick = ()=>{
+      const nextCur = b.dataset.cur;
+      if(nextCur===cur) return;
+      // convert money field values
+      const factor = CUR[nextCur].rateFromKRW / CUR[cur].rateFromKRW;
+      moneyFields.forEach(f=>{
+        const v = parseFloat($(f).value);
+        if(!isNaN(v) && v!==0) $(f).value = +(v*factor).toFixed(CUR[nextCur].dp);
+      });
+      matList.querySelectorAll(".m-price").forEach(inp=>{
+        const v=parseFloat(inp.value); if(!isNaN(v)&&v!==0) inp.value=+(v*factor).toFixed(CUR[nextCur].dp);
+      });
+      cur = nextCur;
+      $("curToggle").querySelectorAll("button").forEach(x=>x.classList.remove("active"));
+      b.classList.add("active");
+      updateUnits();
+      calculate(true); // silent recalc if already calculated
+    };
+  });
+
+  function updateUnits(){
+    const s = CUR[cur].sym;
+    document.querySelectorAll(".cur-unit").forEach(e=>e.textContent = s+"/yd");
+    document.querySelectorAll(".cur-unit-pcs").forEach(e=>e.textContent = s+"/pcs");
+    document.querySelectorAll(".cur-unit-total").forEach(e=>e.textContent = s);
+  }
+
+  // ---- calculation ----
+  let hasCalculated = false;
+  function calculate(silent){
+    if(silent && !hasCalculated) return;
+    const qty = Math.max(1, num("qty"));
+
+    const fabric = num("fabricPrice") * num("fabricUse") * (1 + num("fabricLoss")/100);
+    const sew    = num("cmt") + num("extra") + num("inspect");
+    const mat    = matTotal();
+    const log    = (num("shipping") + num("customs"))/qty + num("packing");
+
+    let unitRaw = fabric + sew + mat + log;
+    if(vatIncluded) unitRaw = unitRaw * 1.1;
+
+    // 반올림 단위: 원화는 원가 1원 올림·마진 10원 올림, 그 외는 최소단위
+    const unitStep   = (CUR[cur].dp===0) ? 1  : Math.pow(10, -CUR[cur].dp);
+    const marginStep = (CUR[cur].dp===0) ? 10 : Math.pow(10, -CUR[cur].dp);
+    const ceilTo = (v,step)=> Math.ceil(v/step - 1e-9)*step;
+
+    // 개당 원가: 1원 단위 올림
+    const unit = ceilTo(unitRaw, unitStep);
+
+    // 최종 단가: 원가에 마진율 적용 후 10원 단위 올림 (1원 단위는 무조건 올림)
+    const myPct     = Math.max(0, num("myMargin"));
+    const final     = ceilTo(unit * (1 + myPct/100), marginStep); // 최종단가 10원 올림
+    const marginAmt = final - unit;                               // 개당 마진액 = 최종 − 원가
+
+    const totalMarginPct = unit>0 ? (marginAmt/unit*100) : 0;    // 원가 기준 총 마진율
+
+    const totalCost   = unit * qty;
+    const marginTotal = marginAmt * qty;
+
+    // hero
+    $("rFinal").textContent       = fmt(final);
+    $("rCostInline").textContent  = fmt(unit);
+    $("rTotalMargin").textContent = totalMarginPct.toFixed(0) + "%";
+    $("rMarginAmt").textContent   = fmt(marginAmt);
+
+    // breakdown
+    $("bdEmpty").style.display="none";
+    $("bdContent").style.display="block";
+    $("bdFabric").textContent = fmt(vatIncluded?fabric*1.1:fabric);
+    $("bdSew").textContent    = fmt(vatIncluded?sew*1.1:sew);
+    $("bdMat").textContent    = fmt(vatIncluded?mat*1.1:mat);
+    $("bdLog").textContent    = fmt(vatIncluded?log*1.1:log);
+    $("bdUnit").textContent   = fmt(unit);
+    $("bdMyPct").textContent    = "("+myPct.toFixed(0)+"%)";
+    $("bdMyMargin").textContent = fmt(marginAmt);
+    $("bdFinal").textContent  = fmt(final);
+    $("bdTotal").textContent  = fmt(totalCost);
+    $("bdMarginTotal").textContent = fmt(marginTotal);
+    $("bdQty").textContent    = qty.toLocaleString("ko-KR");
+
+    // bar
+    const base = fabric+sew+mat+log || 1;
+    const segs = [[fabric,"#2563eb"],[sew,"#059669"],[mat,"#d97706"],[log,"#7c3aed"]];
+    $("costBar").innerHTML = segs.map(([v,c])=>'<span style="width:'+(v/base*100)+'%;background:'+c+'"></span>').join("");
+
+    hasCalculated = true;
+  }
+  $("calcBtn").onclick = ()=>calculate(false);
+  // live recalc after first calculation
+  numFields.forEach(f=>$(f).addEventListener("input",()=>calculate(true)));
+  matList.addEventListener("input",()=>calculate(true));
+
+  // ---- toast ----
+  let toastT;
+  function toast(msg){
+    const t=$("toast"); t.textContent=msg; t.classList.add("show");
+    clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("show"),1800);
+  }
+
+  // ---- storage ----
+  const KEY="mm_quotes_v1";
+  function loadQuotes(){ try{return JSON.parse(localStorage.getItem(KEY))||[]}catch(e){return[]} }
+  function saveQuotes(q){ localStorage.setItem(KEY,JSON.stringify(q)); }
+
+  function snapshot(){
+    const mats=[];
+    matList.querySelectorAll(".mat-row").forEach(r=>{
+      mats.push({name:r.querySelector(".m-name").value, price:r.querySelector(".m-price").value, qty:r.querySelector(".m-qty").value});
+    });
+    return {
+      id: Date.now(), cur, vatIncluded,
+      name: $("quoteName").value || "무제 견적",
+      company: $("company").value.trim(),
+      manager: $("manager").value.trim(),
+      category:$("category").value, country:$("country").value,
+      f:{}, mats, savedAt:new Date().toISOString()
+    };
+  }
+  function fillSnapshot(s){
+    numFields.forEach(f=>s.f[f]=$(f).value);
+  }
+
+  $("saveBtn").onclick = ()=>{
+    if(!hasCalculated){ calculate(false); }
+    const s=snapshot(); fillSnapshot(s);
+    // store computed unit cost for list display
+    s.unitCostKRW = (function(){
+      const q=Math.max(1,num("qty"));
+      let u=(num("fabricPrice")*num("fabricUse")*(1+num("fabricLoss")/100))+(num("cmt")+num("extra")+num("inspect"))+matTotal()+((num("shipping")+num("customs"))/q+num("packing"));
+      if(vatIncluded)u*=1.1;
+      return u / CUR[cur].rateFromKRW; // normalize to KRW
+    })();
+    const q=loadQuotes(); q.unshift(s); saveQuotes(q);
+    renderQuotes(); toast("견적을 저장했어요");
+  };
+
+  function renderQuotes(){
+    const q=loadQuotes();
+    $("savedCount").textContent=q.length;
+    $("drawerCount").textContent=q.length+"건";
+    const list=$("quoteList");
+    if(!q.length){ list.innerHTML='<div class="empty">아직 저장된 견적이 없어요.<br>계산 후 저장하면 여기에 표시됩니다.</div>'; return; }
+    list.innerHTML="";
+    q.forEach(s=>{
+      const el=document.createElement("div"); el.className="quote";
+      const cost = s.unitCostKRW!=null ? "₩ "+Math.ceil(s.unitCostKRW-1e-9).toLocaleString("ko-KR") : "";
+      const d=new Date(s.savedAt);
+      el.innerHTML=
+        '<div class="qn"><span>'+esc(s.name)+'</span><span style="color:var(--accent)">'+cost+'</span></div>'+
+        ((s.company||s.manager)?'<div class="qm">'+[s.company,s.manager].filter(Boolean).map(esc).join(" · ")+'</div>':'')+
+        '<div class="qm">'+[s.category,s.country].filter(Boolean).join(" · ")+'</div>'+
+        '<div class="qm">'+d.toLocaleDateString("ko-KR")+' '+d.toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"})+'</div>'+
+        '<div class="qact"><button class="load">불러오기</button><button class="del">삭제</button></div>';
+      el.querySelector(".load").onclick=(e)=>{e.stopPropagation();restore(s);};
+      el.querySelector(".del").onclick=(e)=>{e.stopPropagation();del(s.id);};
+      list.appendChild(el);
+    });
+  }
+  function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+
+  function restore(s){
+    // set currency first (without conversion)
+    cur=s.cur||"KRW";
+    $("curToggle").querySelectorAll("button").forEach(x=>x.classList.toggle("active",x.dataset.cur===cur));
+    updateUnits();
+    numFields.forEach(f=>{ if(s.f&&s.f[f]!=null)$(f).value=s.f[f]; });
+    $("quoteName").value=s.name||""; $("company").value=s.company||""; $("manager").value=s.manager||"";
+    $("category").value=s.category||""; $("country").value=s.country||"중국 — 광동성 (광저우/둥관)";
+    vatIncluded=s.vatIncluded;
+    $("vatSeg").querySelectorAll("button").forEach(x=>x.classList.toggle("active",parseInt(x.dataset.vat,10)===vatIncluded));
+    // rebuild materials
+    matList.innerHTML="";
+    (s.mats&&s.mats.length?s.mats:[{name:"",price:"",qty:""}]).forEach(m=>matRow(m.name,m.price,m.qty));
+    hasCalculated=true; calculate(false);
+    closeDrawer(); toast("견적을 불러왔어요");
+  }
+  function del(id){
+    const q=loadQuotes().filter(x=>x.id!==id); saveQuotes(q); renderQuotes(); toast("삭제했어요");
+  }
+
+  // ---- drawer ----
+  function openDrawer(){ $("drawer").classList.add("open"); $("drawerMask").classList.add("open"); }
+  function closeDrawer(){ $("drawer").classList.remove("open"); $("drawerMask").classList.remove("open"); }
+  $("openDrawer").onclick=openDrawer; $("closeDrawer").onclick=closeDrawer; $("drawerMask").onclick=closeDrawer;
+
+  // ---- PDF (print) ----
+  $("pdfBtn").onclick=()=>{ if(!hasCalculated)calculate(false); setTimeout(()=>window.print(),120); };
+
+  updateUnits();
+  renderQuotes();
+})();
+</script>
 </body>
 </html>
