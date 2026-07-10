@@ -152,11 +152,31 @@
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
   @media print{
-    body{background:#fff}
+    @page{ size:A4; margin:10mm; }
+    html,body{background:#fff}
     .no-print{display:none !important}
     .wrap{max-width:none;padding:0}
-    .grid{grid-template-columns:1fr}
-    .card{box-shadow:none;border:1px solid #ccc}
+    /* 2단 그리드 해제 → 위아래로 자연스럽게 쌓아 빈 공간 제거 */
+    .grid{display:block}
+    .left-col{gap:10px}
+    .result-sticky{position:static;top:auto;margin-top:10px}
+    /* 카드가 페이지 중간에서 잘리지 않도록 */
+    .card{box-shadow:none;border:1px solid #ccc;break-inside:avoid;page-break-inside:avoid}
+    /* 여백·글자를 압축해 A4 한 장에 맞춤 */
+    .section{padding:10px 14px}
+    .section h2{margin:0 0 8px}
+    .title-row{gap:8px}
+    .result-head{padding:10px 14px}
+    .hero{padding:12px 14px}
+    .hero .big{font-size:24px;margin:2px 0}
+    .hero-grid .cell{padding:10px}
+    .hero-grid .num{font-size:16px}
+    .breakdown{padding:8px 14px}
+    .bd-row{padding:4px 0;font-size:12px}
+    .bd-row.total{padding-top:8px;font-size:13px}
+    .bd-row.total .v{font-size:13px}
+    .bar{margin:4px 0 8px}
+    .foot-note{padding:8px 14px 10px}
   }
 </style>
 </head>
