@@ -159,6 +159,15 @@
   .drawer.open{transform:translateX(0)}
   .drawer h3{margin:0;font-size:15px;font-weight:700}
   .drawer .dh{padding:18px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+  /* export/import toolbar */
+  .dtools{display:flex;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line2);background:#fbfbfc}
+  .dtools button{
+    flex:1;border:1px solid var(--line);background:#fff;border-radius:9px;padding:9px;
+    font-size:12.5px;font-weight:700;cursor:pointer;color:var(--brand2);display:inline-flex;
+    align-items:center;justify-content:center;gap:6px;
+  }
+  .dtools button:hover{background:#f3f4f6}
+  .dtools .note{padding:2px 14px 0;font-size:11px;color:var(--muted)}
   .drawer .dbody{overflow:auto;padding:12px 14px;flex:1}
   .quote{border:1px solid var(--line);border-radius:12px;padding:12px 13px;margin-bottom:10px;cursor:pointer;transition:border-color .15s}
   .quote:hover{border-color:var(--accent)}
@@ -177,6 +186,24 @@
     opacity:0;pointer-events:none;transition:all .25s;z-index:60;box-shadow:0 10px 30px rgba(0,0,0,.25);
   }
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  /* Settings modal */
+  .modal-mask{position:fixed;inset:0;background:rgba(17,24,39,.45);display:none;align-items:center;justify-content:center;z-index:70;padding:18px}
+  .modal-mask.open{display:flex}
+  .modal{background:#fff;border-radius:16px;max-width:440px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25);overflow:hidden}
+  .modal .mh{padding:18px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+  .modal .mh h3{margin:0;font-size:16px;font-weight:800}
+  .modal .mb{padding:18px 20px;display:flex;flex-direction:column;gap:18px}
+  .set-block{display:flex;flex-direction:column;gap:8px}
+  .set-block .st{font-size:13px;font-weight:800;color:var(--ink)}
+  .set-block .sd{font-size:12px;color:var(--muted);margin-top:-2px}
+  .folder-box{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13px;background:#fafafa}
+  .folder-box .fname{font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .set-btns{display:flex;gap:8px;flex-wrap:wrap}
+  .set-btns button{border:1px solid var(--line);background:#fff;border-radius:9px;padding:9px 12px;font-size:13px;font-weight:700;cursor:pointer;color:var(--brand2)}
+  .set-btns button.primary{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .set-btns button:disabled{opacity:.5;cursor:not-allowed}
+  .warn-note{font-size:12px;color:var(--warn);background:#fffbeb;border:1px solid #fde68a;border-radius:9px;padding:9px 11px}
 
   @media print{
     body{background:#fff}
@@ -203,6 +230,7 @@
         <button data-cur="CNY">¥ CNY</button>
         <button data-cur="USD">$ USD</button>
       </div>
+      <button class="saved-btn" id="openSettings" title="내보내기/가져오기 경로 설정">⚙️ 설정</button>
       <button class="saved-btn" id="openDrawer">📋 저장된 견적 <span class="badge" id="savedCount">0</span></button>
     </div>
   </header>
@@ -417,8 +445,41 @@
     <h3>저장된 견적 <span id="drawerCount" style="color:var(--muted);font-weight:600"></span></h3>
     <button class="x-btn" id="closeDrawer">×</button>
   </div>
+  <div class="dtools">
+    <button id="exportBtn" title="저장된 견적 전체를 파일 1개로 내보내기">⬇️ 내보내기</button>
+    <button id="importBtn" title="내보낸 파일을 불러와 합치기">⬆️ 가져오기</button>
+    <input type="file" id="importFile" accept=".json,application/json" style="display:none" />
+  </div>
+  <div class="dtools note" style="display:block;border:0;background:transparent">⚙️ 설정에서 저장 폴더(아이클라우드 등)를 지정하면 그 폴더로 바로 저장·불러오기 돼요. (가져오기는 기존 견적에 합쳐집니다)</div>
   <div class="dbody" id="quoteList"></div>
 </aside>
+
+<!-- Settings modal -->
+<div class="modal-mask no-print" id="settingsMask">
+  <div class="modal">
+    <div class="mh">
+      <h3>⚙️ 내보내기 / 가져오기 설정</h3>
+      <button class="x-btn" id="closeSettings">×</button>
+    </div>
+    <div class="mb">
+      <div class="set-block">
+        <div class="st">저장 폴더</div>
+        <div class="sd">지정한 폴더로 견적을 바로 저장하고 불러옵니다. 아이클라우드 드라이브 안의 폴더를 고르면 기기 간 공유가 편해요.</div>
+        <div class="folder-box"><span>📁</span><span class="fname" id="folderName">미지정 (다운로드 폴더 사용)</span></div>
+        <div class="set-btns">
+          <button class="primary" id="pickFolderBtn">폴더 선택</button>
+          <button id="clearFolderBtn">지정 해제</button>
+        </div>
+        <div class="warn-note" id="fsWarn" style="display:none">이 브라우저(사파리·아이폰 등)는 폴더 지정을 지원하지 않아요. 내보내기는 <b>다운로드</b>, 가져오기는 <b>파일 선택</b>으로 동작합니다. 폴더 지정이 필요하면 데스크톱 크롬/엣지에서 열어주세요.</div>
+      </div>
+      <div class="set-block">
+        <div class="st">백업 파일 이름</div>
+        <div class="sd">같은 이름으로 저장하면 폴더 안 파일 1개가 계속 갱신돼요.</div>
+        <div class="folder-box"><input type="text" id="fileNameInput" style="border:0;background:transparent;padding:0;font-weight:700" /></div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -671,6 +732,122 @@
     const q=loadQuotes().filter(x=>x.id!==id); saveQuotes(q); renderQuotes(); toast("삭제했어요");
   }
 
+  // ===== 내보내기 / 가져오기 (수동 · 경로 지정 가능) =====
+  const FS_SUPPORTED = ("showDirectoryPicker" in window);
+  const FN_KEY="mm_backup_filename";
+  let dirHandle=null;
+
+  function getFilename(){ return (localStorage.getItem(FN_KEY)||"메이크메이드_견적백업.json").trim() || "메이크메이드_견적백업.json"; }
+  function setFilename(v){ localStorage.setItem(FN_KEY, (v||"").trim()||"메이크메이드_견적백업.json"); }
+
+  // --- IndexedDB: 지정한 폴더 핸들을 기억 (세션 넘어 유지) ---
+  function idb(){ return new Promise((res,rej)=>{ const r=indexedDB.open("mm_fs",1);
+    r.onupgradeneeded=()=>r.result.createObjectStore("h"); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
+  async function idbSet(k,v){ const db=await idb(); return new Promise((res,rej)=>{ const t=db.transaction("h","readwrite"); t.objectStore("h").put(v,k); t.oncomplete=()=>res(); t.onerror=()=>rej(t.error); }); }
+  async function idbGet(k){ const db=await idb(); return new Promise((res,rej)=>{ const t=db.transaction("h","readonly"); const q=t.objectStore("h").get(k); q.onsuccess=()=>res(q.result); q.onerror=()=>rej(q.error); }); }
+  async function idbDel(k){ const db=await idb(); return new Promise((res,rej)=>{ const t=db.transaction("h","readwrite"); t.objectStore("h").delete(k); t.oncomplete=()=>res(); t.onerror=()=>rej(t.error); }); }
+
+  async function ensurePerm(handle, mode){
+    if(!handle) return false;
+    const opts={mode:mode};
+    try{
+      if((await handle.queryPermission(opts))==="granted") return true;
+      if((await handle.requestPermission(opts))==="granted") return true;
+    }catch(e){ console.warn(e); }
+    return false;
+  }
+
+  function payloadText(){
+    return JSON.stringify({ app:"makemade-cost", version:1, exportedAt:new Date().toISOString(), quotes:loadQuotes() }, null, 2);
+  }
+  function downloadFile(fn,text){
+    const blob=new Blob([text],{type:"application/json"});
+    const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=fn;
+    document.body.appendChild(a); a.click();
+    setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },500);
+  }
+  function mergeImport(text){
+    let data; try{ data=JSON.parse(text); }catch(e){ toast("파일을 읽지 못했어요"); return; }
+    const incoming=Array.isArray(data)?data:(data&&Array.isArray(data.quotes)?data.quotes:null);
+    if(!incoming){ toast("올바른 견적 파일이 아니에요"); return; }
+    const map=new Map();
+    loadQuotes().forEach(s=>{ if(s&&s.id!=null) map.set(String(s.id),s); });
+    let added=0;
+    incoming.forEach(s=>{ if(!s||s.id==null) return; const k=String(s.id); if(!map.has(k)) added++; map.set(k,s); });
+    const merged=Array.from(map.values()).sort((a,b)=> new Date(b.savedAt||0) - new Date(a.savedAt||0));
+    saveQuotes(merged); renderQuotes();
+    toast("가져오기 완료 — 새 견적 "+added+"건 추가 (총 "+merged.length+"건)");
+  }
+
+  async function exportQuotes(){
+    if(!loadQuotes().length){ toast("내보낼 견적이 없어요"); return; }
+    const fn=getFilename(), text=payloadText();
+    if(FS_SUPPORTED && dirHandle){
+      if(!(await ensurePerm(dirHandle,"readwrite"))){ toast("폴더 권한이 거부됐어요"); return; }
+      try{
+        const fh=await dirHandle.getFileHandle(fn,{create:true});
+        const w=await fh.createWritable(); await w.write(text); await w.close();
+        toast("폴더에 저장했어요 · "+fn); return;
+      }catch(e){ console.warn(e); toast("폴더 저장 실패 — 다운로드로 대체"); }
+    }
+    downloadFile(fn,text);
+    toast("내보내기 완료 · "+fn);
+  }
+
+  async function importQuotesAction(){
+    const fn=getFilename();
+    if(FS_SUPPORTED && dirHandle){
+      if(!(await ensurePerm(dirHandle,"read"))){ toast("폴더 권한이 거부됐어요"); return; }
+      try{
+        const fh=await dirHandle.getFileHandle(fn,{create:false});
+        const file=await fh.getFile();
+        mergeImport(await file.text()); return;
+      }catch(e){ console.warn(e); toast("폴더에서 '"+fn+"'를 못 찾아 파일 선택으로 전환"); }
+    }
+    $("importFile").click();
+  }
+
+  $("exportBtn").onclick=exportQuotes;
+  $("importBtn").onclick=importQuotesAction;
+  $("importFile").onchange=(e)=>{
+    const f=e.target.files&&e.target.files[0];
+    if(f){ const r=new FileReader(); r.onload=()=>mergeImport(r.result); r.onerror=()=>toast("파일을 읽지 못했어요"); r.readAsText(f); }
+    e.target.value="";
+  };
+
+  // ---- 설정 모달 ----
+  function refreshSettingsUI(){
+    $("folderName").textContent = dirHandle ? ("📁 "+dirHandle.name) : "미지정 (다운로드 폴더 사용)";
+    $("fileNameInput").value = getFilename();
+    $("fsWarn").style.display = FS_SUPPORTED ? "none" : "block";
+    $("pickFolderBtn").disabled = !FS_SUPPORTED;
+    $("clearFolderBtn").disabled = !FS_SUPPORTED || !dirHandle;
+  }
+  function openSettings(){ refreshSettingsUI(); $("settingsMask").classList.add("open"); }
+  function closeSettings(){ setFilename($("fileNameInput").value); $("settingsMask").classList.remove("open"); }
+  $("openSettings").onclick=openSettings;
+  $("closeSettings").onclick=closeSettings;
+  $("settingsMask").onclick=(e)=>{ if(e.target===$("settingsMask")) closeSettings(); };
+  $("fileNameInput").onchange=()=>setFilename($("fileNameInput").value);
+
+  $("pickFolderBtn").onclick=async ()=>{
+    if(!FS_SUPPORTED) return;
+    try{
+      const h=await window.showDirectoryPicker({mode:"readwrite"});
+      dirHandle=h; try{ await idbSet("dir",h); }catch(e){}
+      refreshSettingsUI(); toast("저장 폴더를 지정했어요 · "+h.name);
+    }catch(e){ /* 사용자가 취소 */ }
+  };
+  $("clearFolderBtn").onclick=async ()=>{
+    dirHandle=null; try{ await idbDel("dir"); }catch(e){}
+    refreshSettingsUI(); toast("폴더 지정을 해제했어요");
+  };
+
+  async function initFs(){
+    if(FS_SUPPORTED){ try{ const h=await idbGet("dir"); if(h) dirHandle=h; }catch(e){} }
+    refreshSettingsUI();
+  }
+
   // ---- drawer ----
   function openDrawer(){ $("drawer").classList.add("open"); $("drawerMask").classList.add("open"); }
   function closeDrawer(){ $("drawer").classList.remove("open"); $("drawerMask").classList.remove("open"); }
@@ -693,6 +870,7 @@
 
   updateUnits();
   renderQuotes();
+  initFs();   // 저장 폴더 설정 복원 + 설정 UI 초기화
 })();
 </script>
 </body>
