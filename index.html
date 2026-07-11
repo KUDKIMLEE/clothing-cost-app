@@ -229,13 +229,11 @@
             <label>제품 카테고리</label>
             <select id="category">
               <option value="">선택하세요</option>
-              <option>아웃도어 / 하이킹웨어</option>
-              <option>스포츠웨어</option>
-              <option>캐주얼</option>
-              <option>이너웨어</option>
-              <option>데님</option>
-              <option>다운 / 패딩</option>
-              <option>기타</option>
+              <option>B2B</option>
+              <option>굿즈</option>
+              <option>브랜드</option>
+              <option>단체복</option>
+              <option>개인브랜드</option>
             </select>
           </div>
           <div class="field">
@@ -470,7 +468,7 @@
     };
   });
 
-  // ---- 생산 국가/지역 segment (국내 / 해외) ----
+  // ---- 생산 국가 segment (국내 / 해외) ----
   let country = "국내";
   function applyCountryUI(){
     const overseas = (country === "해외");
@@ -576,9 +574,9 @@
     const segs = [[fabric,"#2563eb"],[sew,"#059669"],[mat,"#d97706"],[log,"#7c3aed"]];
     $("costBar").innerHTML = segs.map(([v,c])=>'<span style="width:'+(v/base*100)+'%;background:'+c+'"></span>').join("");
 
-    // 원가 비중 %(부가세 제외 원가 기준) — 바 색상과 동일하게 표시
+    // 원가 비중 %(부가세 제외 원가 기준) — 바 색상과 동일
     const pct = v => (v/base*100);
-    const pctTxt = v => (v<=0 ? "0%" : (pctVal=>{ return pctVal<1 ? pctVal.toFixed(1)+"%" : Math.round(pctVal)+"%"; })(pct(v)));
+    const pctTxt = v => (v<=0 ? "0%" : (p=>p<1 ? p.toFixed(1)+"%" : Math.round(p)+"%")(pct(v)));
     $("bdFabricPct").textContent = pctTxt(fabric);
     $("bdSewPct").textContent    = pctTxt(sew);
     $("bdMatPct").textContent    = pctTxt(mat);
