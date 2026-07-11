@@ -134,6 +134,8 @@
   .bd-row .k{color:var(--brand2);display:flex;align-items:center;gap:8px}
   .bd-row .dot{width:9px;height:9px;border-radius:3px;flex:none}
   .bd-row .v{font-weight:700}
+  .bd-row .pv{display:flex;align-items:center;gap:9px}
+  .bd-row .pct{font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;min-width:42px;text-align:center}
   .bd-row.total{border-top:2px solid var(--line);margin-top:4px;padding-top:12px;font-size:15px}
   .bd-row.total .v{font-size:16px}
 
@@ -245,16 +247,11 @@
             <span class="hint">300pcs 이상부터 단가 협상 유리</span>
           </div>
           <div class="field">
-            <label>생산 국가 / 지역</label>
-            <select id="country">
-              <option>중국 — 광동성 (광저우/둥관)</option>
-              <option>중국 — 산동성 (칭다오/웨이하이)</option>
-              <option>중국 — 절강성</option>
-              <option>베트남</option>
-              <option>방글라데시</option>
-              <option>한국</option>
-              <option>기타</option>
-            </select>
+            <label>생산 국가</label>
+            <div class="seg" id="countrySeg">
+              <button data-country="국내" class="active">국내</button>
+              <button data-country="해외">해외</button>
+            </div>
           </div>
         </div>
       </div>
@@ -302,8 +299,8 @@
             <div class="input-wrap"><input id="extra" class="has-unit" type="number" min="0" value="0" /><span class="unit cur-unit-pcs">₩/pcs</span></div>
           </div>
           <div class="field">
-            <label>검품 비용</label>
-            <div class="input-wrap"><input id="inspect" class="has-unit" type="number" min="0" value="0" /><span class="unit cur-unit-pcs">₩/pcs</span></div>
+            <label>포장 / 라벨</label>
+            <div class="input-wrap"><input id="packing" class="has-unit" type="number" min="0" value="0" /><span class="unit cur-unit-pcs">₩/pcs</span></div>
           </div>
         </div>
       </div>
@@ -314,7 +311,7 @@
         <button class="add-btn" id="addMat">+ 부자재 추가</button>
       </div>
 
-      <div class="section">
+      <div class="section" id="logSection">
         <h2 style="--tc:#7c3aed"><span class="badge-icon">🚚</span>물류 / 기타</h2>
         <div class="row3">
           <div class="field">
@@ -326,8 +323,8 @@
             <div class="input-wrap"><input id="customs" class="has-unit" type="number" min="0" value="0" /><span class="unit cur-unit-total">₩</span></div>
           </div>
           <div class="field">
-            <label>포장 / 라벨</label>
-            <div class="input-wrap"><input id="packing" class="has-unit" type="number" min="0" value="0" /><span class="unit cur-unit-pcs">₩/pcs</span></div>
+            <label>검품 비용</label>
+            <div class="input-wrap"><input id="inspect" class="has-unit" type="number" min="0" value="0" /><span class="unit cur-unit-pcs">₩/pcs</span></div>
           </div>
         </div>
       </div>
@@ -387,10 +384,10 @@
           <div class="empty" id="bdEmpty">입력값을 넣고 <b>원가 계산하기</b>를 누르세요.</div>
           <div id="bdContent" style="display:none">
             <div class="bar" id="costBar"></div>
-            <div class="bd-row"><span class="k"><span class="dot" style="background:#2563eb"></span>원단</span><span class="v" id="bdFabric">—</span></div>
-            <div class="bd-row"><span class="k"><span class="dot" style="background:#059669"></span>봉제·가공</span><span class="v" id="bdSew">—</span></div>
-            <div class="bd-row"><span class="k"><span class="dot" style="background:#d97706"></span>부자재</span><span class="v" id="bdMat">—</span></div>
-            <div class="bd-row"><span class="k"><span class="dot" style="background:#7c3aed"></span>물류·기타</span><span class="v" id="bdLog">—</span></div>
+            <div class="bd-row"><span class="k"><span class="dot" style="background:#2563eb"></span>원단</span><span class="pv"><span class="pct" id="bdFabricPct" style="color:#2563eb;background:#2563eb1a">—</span><span class="v" id="bdFabric">—</span></span></div>
+            <div class="bd-row"><span class="k"><span class="dot" style="background:#059669"></span>봉제·가공</span><span class="pv"><span class="pct" id="bdSewPct" style="color:#059669;background:#0596691a">—</span><span class="v" id="bdSew">—</span></span></div>
+            <div class="bd-row"><span class="k"><span class="dot" style="background:#d97706"></span>부자재</span><span class="pv"><span class="pct" id="bdMatPct" style="color:#d97706;background:#d977061a">—</span><span class="v" id="bdMat">—</span></span></div>
+            <div class="bd-row" id="bdLogRow"><span class="k"><span class="dot" style="background:#7c3aed"></span>물류·기타</span><span class="pv"><span class="pct" id="bdLogPct" style="color:#7c3aed;background:#7c3aed1a">—</span><span class="v" id="bdLog">—</span></span></div>
             <div class="bd-row total"><span class="k">개당 원가 합계</span><span class="v" id="bdUnit">—</span></div>
             <div class="bd-row"><span class="k">＋ 프로모션 마진 <span id="bdMyPct" style="color:var(--muted)">(—%)</span></span><span class="v" id="bdMyMargin">—</span></div>
             <div class="bd-row total"><span class="k">＝ 최종 단가 (개당)</span><span class="v sell" id="bdFinal" style="color:var(--accent)">—</span></div>
@@ -473,6 +470,24 @@
     };
   });
 
+  // ---- 생산 국가/지역 segment (국내 / 해외) ----
+  let country = "국내";
+  function applyCountryUI(){
+    const overseas = (country === "해외");
+    $("logSection").style.display = overseas ? "" : "none";      // 물류/기타는 해외일 때만 표시
+    const r = $("bdLogRow"); if(r) r.style.display = overseas ? "flex" : "none";
+  }
+  $("countrySeg").querySelectorAll("button").forEach(b=>{
+    b.onclick = ()=>{
+      $("countrySeg").querySelectorAll("button").forEach(x=>x.classList.remove("active"));
+      b.classList.add("active");
+      country = b.dataset.country;
+      applyCountryUI();
+      calculate(true);
+    };
+  });
+  applyCountryUI(); // 초기 상태(국내) 반영
+
   // ---- currency toggle ----
   $("curToggle").querySelectorAll("button").forEach(b=>{
     b.onclick = ()=>{
@@ -509,9 +524,10 @@
     const qty = Math.max(1, num("qty"));
 
     const fabric = num("fabricPrice") * num("fabricUse") * (1 + num("fabricLoss")/100);
-    const sew    = num("cmt") + num("extra") + num("inspect");
+    const sew    = num("cmt") + num("extra") + num("packing");
     const mat    = matTotal();
-    const log    = (num("shipping") + num("customs"))/qty + num("packing");
+    let   log    = (num("shipping") + num("customs"))/qty + num("inspect");
+    if(country === "국내") log = 0;   // 국내는 물류/기타 제외
 
     let unitRaw = fabric + sew + mat + log;
     if(vatIncluded) unitRaw = unitRaw * 1.1;
@@ -560,6 +576,14 @@
     const segs = [[fabric,"#2563eb"],[sew,"#059669"],[mat,"#d97706"],[log,"#7c3aed"]];
     $("costBar").innerHTML = segs.map(([v,c])=>'<span style="width:'+(v/base*100)+'%;background:'+c+'"></span>').join("");
 
+    // 원가 비중 %(부가세 제외 원가 기준) — 바 색상과 동일하게 표시
+    const pct = v => (v/base*100);
+    const pctTxt = v => (v<=0 ? "0%" : (pctVal=>{ return pctVal<1 ? pctVal.toFixed(1)+"%" : Math.round(pctVal)+"%"; })(pct(v)));
+    $("bdFabricPct").textContent = pctTxt(fabric);
+    $("bdSewPct").textContent    = pctTxt(sew);
+    $("bdMatPct").textContent    = pctTxt(mat);
+    $("bdLogPct").textContent    = pctTxt(log);
+
     hasCalculated = true;
   }
   $("calcBtn").onclick = ()=>calculate(false);
@@ -588,7 +612,7 @@
       company: $("company").value.trim(),
       manager: $("manager").value.trim(),
       category: $("category").value,
-      country: $("country").value,
+      country: country,
       f:{}, mats, savedAt:new Date().toISOString()
     };
     numFields.forEach(f=> s.f[f]=$(f).value);
@@ -602,7 +626,10 @@
     updateUnits();
     numFields.forEach(f=>{ if(s.f && s.f[f]!=null) $(f).value=s.f[f]; });
     $("quoteName").value=s.name||""; $("company").value=s.company||""; $("manager").value=s.manager||"";
-    $("category").value=s.category||""; $("country").value=s.country||"중국 — 광동성 (광저우/둥관)";
+    $("category").value=s.category||"";
+    country = (s.country==="해외") ? "해외" : "국내";
+    $("countrySeg").querySelectorAll("button").forEach(x=>x.classList.toggle("active",x.dataset.country===country));
+    applyCountryUI();
     vatIncluded = (s.vatIncluded!=null)? s.vatIncluded : 1;
     $("vatSeg").querySelectorAll("button").forEach(x=>x.classList.toggle("active",parseInt(x.dataset.vat,10)===vatIncluded));
     matList.innerHTML="";
